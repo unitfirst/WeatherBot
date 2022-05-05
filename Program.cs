@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -13,12 +14,20 @@ namespace WeatherBot
         private static readonly string token = "5314975107:AAGYAQgQuWhDNslmuT-JH_-kQdGH6PJEoL0";
         private static TelegramBotClient _client = new TelegramBotClient(token);
 
-        private static Task HandleErrorAsync(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
+        static Task HandleErrorAsync(ITelegramBotClient client, Exception exception, CancellationToken cts)
         {
-            throw new NotImplementedException();
+            var exceptionMessage = exception switch
+            {
+                ApiRequestException apiRequestException
+                    => $"Error telegram API\n{apiRequestException.ErrorCode}\n{apiRequestException.Message}",
+                _ => exception.ToString()
+            };
+
+            Console.WriteLine(exceptionMessage);
+            return Task.CompletedTask;
         }
 
-        private static async Task HandleUpdatesAsync(ITelegramBotClient client, Update update, CancellationToken cts)
+        static async Task HandleUpdatesAsync(ITelegramBotClient client, Update update, CancellationToken cts)
         {
             if (update.Type == UpdateType.Message && update.Message?.Text != null)
             {
@@ -27,7 +36,7 @@ namespace WeatherBot
             }
         }
 
-        private static async Task HandleMessage(ITelegramBotClient client, Message message)
+        static async Task HandleMessage(ITelegramBotClient client, Message message)
         {
             if (message.Text == "/start")
             {
@@ -36,7 +45,7 @@ namespace WeatherBot
         }
 
 
-        public static async Task Main(string[] args)
+        static async Task Main(string[] args)
         {
             var cts = new CancellationTokenSource();
             var receiverOptions = new ReceiverOptions
