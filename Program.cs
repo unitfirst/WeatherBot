@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace WeatherBot
 {
@@ -17,9 +18,21 @@ namespace WeatherBot
             throw new NotImplementedException();
         }
 
-        private static Task HandleUpdatesAsync(ITelegramBotClient client, Update update, CancellationToken cts)
+        private static async Task HandleUpdatesAsync(ITelegramBotClient client, Update update, CancellationToken cts)
         {
-            throw new NotImplementedException();
+            if (update.Type == UpdateType.Message && update.Message?.Text != null)
+            {
+                await HandleMessage(client, update.Message);
+                return;
+            }
+        }
+
+        private static async Task HandleMessage(ITelegramBotClient client, Message message)
+        {
+            if (message.Text == "/start")
+            {
+                await client.SendTextMessageAsync(message.Chat.Id, "Hello!");
+            }
         }
 
 
@@ -41,6 +54,8 @@ namespace WeatherBot
 
             Console.WriteLine($"Start listening: {me.Username}");
             Console.ReadLine();
+
+            cts.Cancel();
         }
     }
 }
