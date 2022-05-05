@@ -11,7 +11,7 @@ namespace WeatherBot
 {
     internal class Program
     {
-        private static TelegramBotClient _client = new TelegramBotClient(Config.token);
+        private static TelegramBotClient _client = new(Config.Token);
 
         static Task HandleErrorAsync(ITelegramBotClient client, Exception exception, CancellationToken cts)
         {
