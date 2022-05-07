@@ -24,7 +24,7 @@ namespace WeatherBot
             _receiverOptions = new ReceiverOptions();
         }
 
-        public void BotStart()
+        public void StartEcho()
         {
             _client.StartReceiving(
                 HandleUpdatesAsync,
@@ -32,20 +32,20 @@ namespace WeatherBot
                 _receiverOptions,
                 _cts.Token);
 
-            BotCheck();
+            CheckEcho();
 
             Console.ReadLine();
-            BotStop();
+            StopEcho();
         }
 
-        private async void BotCheck()
+        private async void CheckEcho()
         {
             var me = await _client.GetMeAsync(_cts.Token);
             
-            Console.WriteLine($"BotStart listening: {me.Username}");
+            Console.WriteLine($"StartEcho listening: {me.Username}");
         }
 
-        private void BotStop()
+        private void StopEcho()
         {
             _cts.Cancel();
         }
