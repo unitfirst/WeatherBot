@@ -5,7 +5,11 @@ namespace WeatherBot
         public static string Token
         {
             get => "5314975107:AAGYAQgQuWhDNslmuT-JH_-kQdGH6PJEoL0";
-            private set => Token = value;
+        }
+
+        public static string APIKey
+        {
+            get => "3df6bf26591e4e5f1ee9a77b9fc19052";
         }
     }
 }
