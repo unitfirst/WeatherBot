@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
@@ -14,10 +17,15 @@ namespace WeatherBot
     public class Client
     {
         private readonly string _token;
+        private readonly string lang = "ru";
         private readonly TelegramBotClient _client;
         private readonly CancellationTokenSource _cts;
         private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
+
+        private string _nameOfCity { get; set; }
+        private float _tempOfCity { get; set; }
+        private float _feelsLike { get; set; }
 
         public Client(string token)
         {
@@ -48,7 +56,7 @@ namespace WeatherBot
         {
             var me = await _client.GetMeAsync(_cts.Token);
 
-            Console.WriteLine($"StartEcho listening: {me.Username}");
+            Console.WriteLine($"Start listening: {me.Username}");
         }
 
         private void StopEcho()
@@ -59,6 +67,38 @@ namespace WeatherBot
         private void CreateList()
         {
             _commands.Add(new GetHelp());
+        }
+
+        private void WeatherResponseByName(string cityName)
+        {
+            try
+            {
+                var url =
+                    $"https://api.openweathermap.org/data/2.5/weather?q={cityName}&unit=metric&appid={Config.APIKey}&lang={lang}";
+
+                var webRequest = (HttpWebRequest) WebRequest.Create(url);
+                var webResponse = (HttpWebResponse) webRequest?.GetResponse();
+
+                string response;
+                using (var sr = new StreamReader(webResponse.GetResponseStream()))
+                {
+                    response = sr.ReadToEnd();
+                }
+
+                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
+
+                if (weatherResponse != null)
+                {
+                    _nameOfCity = weatherResponse.Name;
+                    _tempOfCity = weatherResponse.Main.Temp;
+                    _feelsLike = weatherResponse.Main.Feels_Like;
+                }
+            }
+            catch (System.Net.WebException)
+            {
+                Console.WriteLine("Возникло исключение");
+                return;
+            }
         }
 
         private Task HandleErrorAsync(ITelegramBotClient client, Exception exception, CancellationToken cts)
@@ -82,12 +122,11 @@ namespace WeatherBot
             }
         }
 
-        private Task HandleMessage(ITelegramBotClient client, Message message)
+        private async Task HandleMessage(ITelegramBotClient client, Message message)
         {
             if (message.Text != null)
             {
                 Console.WriteLine($"{message.Chat.Id}\t{message.From?.Username}\t{message.Text}");
-
                 foreach (var msg in _commands)
                 {
                     if (msg.Contains(message.Text))
@@ -95,9 +134,13 @@ namespace WeatherBot
                         msg.Execute(message, client);
                     }
                 }
-            }
 
-            return Task.CompletedTask;
+                WeatherResponseByName(message.Text);
+                await client.SendTextMessageAsync(
+                    message.Chat.Id, $"\nTemperature: {_nameOfCity} \n{_tempOfCity} °C\n{_feelsLike} °C");
+
+                Console.WriteLine($"{_nameOfCity}\t{_tempOfCity}\t{_feelsLike}");
+            }
         }
     }
 }
