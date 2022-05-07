@@ -69,7 +69,7 @@ namespace WeatherBot
             _commands.Add(new GetHelp());
         }
 
-        private void WeatherResponseByName(string cityName)
+        private async void WeatherResponseByName(string cityName, ITelegramBotClient client, Message message)
         {
             try
             {
@@ -96,7 +96,8 @@ namespace WeatherBot
             }
             catch (System.Net.WebException)
             {
-                Console.WriteLine("Возникло исключение");
+                await client.SendTextMessageAsync(message.Chat.Id, $"\nCity not found");
+                Console.WriteLine("Exception!");
                 return;
             }
         }
@@ -135,7 +136,7 @@ namespace WeatherBot
                     }
                 }
 
-                WeatherResponseByName(message.Text);
+                WeatherResponseByName(message.Text, client, message);
                 await client.SendTextMessageAsync(
                     message.Chat.Id, $"\nTemperature: {_nameOfCity} \n{_tempOfCity} °C\n{_feelsLike} °C");
 
