@@ -23,9 +23,9 @@ namespace WeatherBot
         private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
 
-        private string _nameOfCity { get; set; }
-        private float _tempOfCity { get; set; }
-        private float _feelsLike { get; set; }
+        private string NameOfCity { get; set; }
+        private float TempOfCity { get; set; }
+        private float FeelsLike { get; set; }
 
         public Client(string token)
         {
@@ -35,7 +35,7 @@ namespace WeatherBot
             _receiverOptions = new ReceiverOptions() {AllowedUpdates = { }};
             _commands = new List<Command.Command>();
         }
-        
+
         private Task HandleErrorAsync(ITelegramBotClient client, Exception exception, CancellationToken cts)
         {
             var exceptionMessage = exception switch
@@ -70,11 +70,15 @@ namespace WeatherBot
                     }
                 }
 
-                ResponseByName(message.Text);
-                await client.SendTextMessageAsync(
-                    message.Chat.Id, $"\nTemperature: {_nameOfCity} \n{_tempOfCity} °C\n{_feelsLike} °C");
+                if (message.Type == MessageType.Text)
+                {
+                    ResponseByName(message.Text);
 
-                Console.WriteLine($"{_nameOfCity}\t{_tempOfCity}\t{_feelsLike}");
+                    await client.SendTextMessageAsync(
+                        message.Chat.Id, $"\nTemperature: {NameOfCity} \n{TempOfCity} °C\n{FeelsLike} °C");
+                }
+
+                Console.WriteLine($"{NameOfCity}\t{TempOfCity}\t{FeelsLike}");
             }
         }
 
@@ -122,7 +126,8 @@ namespace WeatherBot
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
 
                 string response;
-                using (var sr = new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
+                using (var sr =
+                    new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
                 {
                     response = sr.ReadToEnd();
                 }
@@ -131,9 +136,9 @@ namespace WeatherBot
 
                 if (weatherResponse != null)
                 {
-                    _nameOfCity = weatherResponse.Name;
-                    _tempOfCity = weatherResponse.Main.Temp;
-                    _feelsLike = weatherResponse.Main.Feels_Like;
+                    NameOfCity = weatherResponse.Name;
+                    TempOfCity = weatherResponse.Main.Temp;
+                    FeelsLike = weatherResponse.Main.Feels_Like;
                 }
             }
             catch (System.Net.WebException)
