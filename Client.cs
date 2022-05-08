@@ -70,7 +70,7 @@ namespace WeatherBot
                     }
                 }
 
-                WeatherResponseByName(message.Text);
+                ResponseByName(message.Text);
                 await client.SendTextMessageAsync(
                     message.Chat.Id, $"\nTemperature: {_nameOfCity} \n{_tempOfCity} °C\n{_feelsLike} °C");
 
@@ -86,7 +86,7 @@ namespace WeatherBot
                 _receiverOptions,
                 _cts.Token);
 
-            CreateList();
+            AddCommand();
             CheckEcho();
 
             Console.ReadLine();
@@ -106,12 +106,12 @@ namespace WeatherBot
             _cts.Cancel();
         }
 
-        private void CreateList()
+        private void AddCommand()
         {
             _commands.Add(new GetHelp());
         }
 
-        private async void WeatherResponseByName(string cityName)
+        private void ResponseByName(string cityName)
         {
             try
             {
@@ -122,7 +122,7 @@ namespace WeatherBot
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
 
                 string response;
-                using (var sr = new StreamReader(webResponse.GetResponseStream()))
+                using (var sr = new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
                 {
                     response = sr.ReadToEnd();
                 }

@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using Newtonsoft.Json;
+
 namespace WeatherBot
 {
     public class WeatherResponse
