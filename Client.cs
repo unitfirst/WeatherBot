@@ -35,73 +35,7 @@ namespace WeatherBot
             _receiverOptions = new ReceiverOptions() {AllowedUpdates = { }};
             _commands = new List<Command.Command>();
         }
-
-        public void StartEcho()
-        {
-            _client.StartReceiving(
-                HandleUpdatesAsync,
-                HandleErrorAsync,
-                _receiverOptions,
-                _cts.Token);
-
-            CreateList();
-            CheckEcho();
-
-            Console.ReadLine();
-            _commands.Clear();
-            StopEcho();
-        }
-
-        private async void CheckEcho()
-        {
-            var me = await _client.GetMeAsync(_cts.Token);
-
-            Console.WriteLine($"Start listening: {me.Username}");
-        }
-
-        private void StopEcho()
-        {
-            _cts.Cancel();
-        }
-
-        private void CreateList()
-        {
-            _commands.Add(new GetHelp());
-        }
-
-        private async void WeatherResponseByName(string cityName, ITelegramBotClient client, Message message)
-        {
-            try
-            {
-                var url =
-                    $"https://api.openweathermap.org/data/2.5/weather?q={cityName}&unit=metric&appid={Config.APIKey}&lang={lang}";
-
-                var webRequest = (HttpWebRequest) WebRequest.Create(url);
-                var webResponse = (HttpWebResponse) webRequest?.GetResponse();
-
-                string response;
-                using (var sr = new StreamReader(webResponse.GetResponseStream()))
-                {
-                    response = sr.ReadToEnd();
-                }
-
-                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
-
-                if (weatherResponse != null)
-                {
-                    _nameOfCity = weatherResponse.Name;
-                    _tempOfCity = weatherResponse.Main.Temp;
-                    _feelsLike = weatherResponse.Main.Feels_Like;
-                }
-            }
-            catch (System.Net.WebException)
-            {
-                await client.SendTextMessageAsync(message.Chat.Id, $"\nCity not found");
-                Console.WriteLine("Exception!");
-                return;
-            }
-        }
-
+        
         private Task HandleErrorAsync(ITelegramBotClient client, Exception exception, CancellationToken cts)
         {
             var exceptionMessage = exception switch
@@ -136,11 +70,76 @@ namespace WeatherBot
                     }
                 }
 
-                WeatherResponseByName(message.Text, client, message);
+                WeatherResponseByName(message.Text);
                 await client.SendTextMessageAsync(
                     message.Chat.Id, $"\nTemperature: {_nameOfCity} \n{_tempOfCity} °C\n{_feelsLike} °C");
 
                 Console.WriteLine($"{_nameOfCity}\t{_tempOfCity}\t{_feelsLike}");
+            }
+        }
+
+        public void StartEcho()
+        {
+            _client.StartReceiving(
+                HandleUpdatesAsync,
+                HandleErrorAsync,
+                _receiverOptions,
+                _cts.Token);
+
+            CreateList();
+            CheckEcho();
+
+            Console.ReadLine();
+            _commands.Clear();
+            StopEcho();
+        }
+
+        private async void CheckEcho()
+        {
+            var me = await _client.GetMeAsync(_cts.Token);
+
+            Console.WriteLine($"Start listening: {me.Username}");
+        }
+
+        private void StopEcho()
+        {
+            _cts.Cancel();
+        }
+
+        private void CreateList()
+        {
+            _commands.Add(new GetHelp());
+        }
+
+        private async void WeatherResponseByName(string cityName)
+        {
+            try
+            {
+                var url =
+                    $"https://api.openweathermap.org/data/2.5/weather?q={cityName}&unit=metric&appid={Config.APIKey}&lang={lang}";
+
+                var webRequest = (HttpWebRequest) WebRequest.Create(url);
+                var webResponse = (HttpWebResponse) webRequest?.GetResponse();
+
+                string response;
+                using (var sr = new StreamReader(webResponse.GetResponseStream()))
+                {
+                    response = sr.ReadToEnd();
+                }
+
+                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
+
+                if (weatherResponse != null)
+                {
+                    _nameOfCity = weatherResponse.Name;
+                    _tempOfCity = weatherResponse.Main.Temp;
+                    _feelsLike = weatherResponse.Main.Feels_Like;
+                }
+            }
+            catch (System.Net.WebException)
+            {
+                Console.WriteLine("Exception!");
+                return;
             }
         }
     }

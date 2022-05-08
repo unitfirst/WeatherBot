@@ -11,5 +11,7 @@ namespace WeatherBot
         {
             get => "3df6bf26591e4e5f1ee9a77b9fc19052";
         }
+        
+        public readonly string lang = "ru";
     }
 }
