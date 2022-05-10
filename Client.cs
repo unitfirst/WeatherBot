@@ -21,6 +21,7 @@ namespace WeatherBot
         private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
         private WeatherResponse _weatherResponse;
+        private Config _config = new Config();
 
         public Client(string token)
         {
@@ -134,18 +135,11 @@ namespace WeatherBot
             _commands.Add(new GetHelp());
         }
 
-        private void ResponseByName(string cityName)
+        private void ResponseByName(string text)
         {
             try
             {
-                var url =
-                    $"https://api.openweathermap.org/data/2.5/weather" +
-                    $"?q={cityName}" +
-                    $"&unit=metric" +
-                    $"&appid={Config.APIKey}" +
-                    $"&lang={Config.Lang}";
-
-                var webRequest = (HttpWebRequest) WebRequest.Create(url);
+                var webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(text));
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
 
                 string response;
@@ -168,13 +162,7 @@ namespace WeatherBot
         {
             try
             {
-                var url =
-                    $"https://api.openweathermap.org/data/2.5/weather" +
-                    $"?lat={location.Latitude}" +
-                    $"&lon={location.Longitude}" +
-                    $"&appid={Config.APIKey}";
-
-                var webRequest = (HttpWebRequest) WebRequest.Create(url);
+                var webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(location));
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
 
                 string response;

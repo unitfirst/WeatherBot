@@ -6,7 +6,8 @@ namespace WeatherBot
     {
         private static void Main(string[] args)
         {
-            var client = new Client(Config.Token);
+            var config = new Config();
+            var client = new Client(config.GetToken());
 
             Console.WriteLine("Welcome. Please select option:");
             Console.WriteLine("0. Exit program");

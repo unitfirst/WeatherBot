@@ -1,22 +1,51 @@
-using System.Security.Policy;
+using System;
+using Telegram.Bot.Types;
 
 namespace WeatherBot
 {
     public class Config
     {
-        public static string Token
-        {
-            get => "5314975107:AAGYAQgQuWhDNslmuT-JH_-kQdGH6PJEoL0";
-        }
+        private string _url;
+        private string Token { get; set; }
 
-        public static string APIKey
-        {
-            get => "3df6bf26591e4e5f1ee9a77b9fc19052";
-        }
+        private string ApiKey { get; set; }
 
-        public static string Lang
+        public string Lang
         {
             get => "en";
+            set => Lang = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public string GetToken()
+        {
+            return "5314975107:AAGYAQgQuWhDNslmuT-JH_-kQdGH6PJEoL0";
+        }
+
+        private static string GetAPI()
+        {
+            return "3df6bf26591e4e5f1ee9a77b9fc19052";
+        }
+
+        public string GetUrl(Location location)
+        {
+            var url =
+                "https://api.openweathermap.org/data/2.5/weather" +
+                $"?lat={location.Latitude}" +
+                $"&lon={location.Longitude}" +
+                $"&appid={GetAPI()}";
+
+            return url;
+        }
+
+        public string GetUrl(string text)
+        {
+            _url = "https://api.openweathermap.org/data/2.5/weather" +
+                   $"?q={text}" +
+                   "&unit=metric" +
+                   $"&appid={GetAPI()}" +
+                   $"&lang={Lang}";
+
+            return _url;
         }
     }
 }
