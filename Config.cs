@@ -37,10 +37,10 @@ namespace WeatherBot
             return url;
         }
 
-        public string GetUrl(string text)
+        public string GetUrl(string message)
         {
             _url = "https://api.openweathermap.org/data/2.5/weather" +
-                   $"?q={text}" +
+                   $"?q={message}" +
                    "&unit=metric" +
                    $"&appid={GetApi()}" +
                    $"&lang={Lang}";
