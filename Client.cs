@@ -55,6 +55,10 @@ namespace WeatherBot
             {
                 await HandleMessage(client, update.Message);
             }
+            else if(update.Type == UpdateType.Message && update.Message?.Location !=null)
+            {
+                await HandleMessage(client, update.Message);
+            }
         }
 
         private async Task HandleMessage(ITelegramBotClient client, Message message)
@@ -73,7 +77,13 @@ namespace WeatherBot
                 if (message.Type == MessageType.Text)
                 {
                     ResponseByName(message.Text);
+                    await client.SendTextMessageAsync(
+                        message.Chat.Id, $"\nTemperature: {NameOfCity} \n{TempOfCity} °C\n{FeelsLike} °C");
+                }
 
+                else if (message.Type == MessageType.Location)
+                {
+                    ResponseByGeo(message.Location);
                     await client.SendTextMessageAsync(
                         message.Chat.Id, $"\nTemperature: {NameOfCity} \n{TempOfCity} °C\n{FeelsLike} °C");
                 }
@@ -120,7 +130,11 @@ namespace WeatherBot
             try
             {
                 var url =
-                    $"https://api.openweathermap.org/data/2.5/weather?q={cityName}&unit=metric&appid={Config.APIKey}&lang={lang}";
+                    $"https://api.openweathermap.org/data/2.5/weather" +
+                    $"?q={cityName}" +
+                    $"&unit=metric" +
+                    $"&appid={Config.APIKey}" +
+                    $"&lang={lang}";
 
                 var webRequest = (HttpWebRequest) WebRequest.Create(url);
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
@@ -139,6 +153,41 @@ namespace WeatherBot
                     NameOfCity = weatherResponse.Name;
                     TempOfCity = weatherResponse.Main.Temp;
                     FeelsLike = weatherResponse.Main.Feels_Like;
+                }
+            }
+            catch (System.Net.WebException)
+            {
+                Console.WriteLine("Exception!");
+                return;
+            }
+        }
+
+        private void ResponseByGeo(Location location)
+        {
+            try
+            {
+                var url =
+                    $"https://api.openweathermap.org/data/2.5/weather" +
+                    $"?lat={location.Latitude}" +
+                    $"&lon={location.Longitude}" +
+                    $"&appid={Config.APIKey}";
+
+                var webRequest = (HttpWebRequest) WebRequest.Create(url);
+                var webResponse = (HttpWebResponse) webRequest?.GetResponse();
+
+                string response;
+                using (var sr =
+                    new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
+                {
+                    response = sr.ReadToEnd();
+                }
+
+                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
+
+                if (weatherResponse != null)
+                {
+                    var lat = weatherResponse.Coord.lat;
+                    var lon = weatherResponse.Coord.lon;
                 }
             }
             catch (System.Net.WebException)
