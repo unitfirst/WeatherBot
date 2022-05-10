@@ -20,8 +20,8 @@ namespace WeatherBot
         private readonly CancellationTokenSource _cts;
         private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
+        private readonly Config _config = new Config();
         private WeatherResponse _weatherResponse;
-        private Config _config = new Config();
 
         public Client(string token)
         {
