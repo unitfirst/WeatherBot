@@ -75,7 +75,7 @@ namespace WeatherBot
 
                 if (message.Type == MessageType.Text)
                 {
-                    ResponseByName(message.Text);
+                    GetWeather(message);
                 }
             }
 
@@ -87,7 +87,7 @@ namespace WeatherBot
                     $"\t{message.Location?.Latitude}" +
                     $"\t{message.Location?.Longitude}");
 
-                ResponseByGeo(message.Location);
+                GetWeather(message);
             }
 
             await client.SendTextMessageAsync(
@@ -135,37 +135,24 @@ namespace WeatherBot
             _commands.Add(new GetHelp());
         }
 
-        private void ResponseByName(string text)
+        private void GetWeather(Message message)
         {
             try
             {
-                var webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(text));
-                var webResponse = (HttpWebResponse) webRequest?.GetResponse();
-
+                HttpWebRequest webRequest;
                 string response;
-                using (var sr =
-                    new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
+                
+                if (message.Type == MessageType.Text)
                 {
-                    response = sr.ReadToEnd();
+                    webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Text));
                 }
-
-                _weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
-            }
-            catch (System.Net.WebException)
-            {
-                Console.WriteLine("Exception!");
-                return;
-            }
-        }
-
-        private void ResponseByGeo(Location location)
-        {
-            try
-            {
-                var webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(location));
+                else
+                {
+                    webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
+                }
+                
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
-
-                string response;
+                
                 using (var sr =
                     new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
                 {
