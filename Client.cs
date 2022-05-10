@@ -17,15 +17,12 @@ namespace WeatherBot
     public class Client
     {
         private readonly string _token;
-        private readonly string lang = "ru";
+        private readonly string lang = "en";
         private readonly TelegramBotClient _client;
         private readonly CancellationTokenSource _cts;
         private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
-
-        private string NameOfCity { get; set; }
-        private float TempOfCity { get; set; }
-        private float FeelsLike { get; set; }
+        private WeatherResponse _weatherResponse;
 
         public Client(string token)
         {
@@ -69,6 +66,7 @@ namespace WeatherBot
                     $"{message.Chat.Id}" +
                     $"\t{message.From?.Username}" +
                     $"\t{message.Text}");
+
                 foreach (var msg in _commands)
                 {
                     if (msg.Contains(message.Text))
@@ -80,31 +78,30 @@ namespace WeatherBot
                 if (message.Type == MessageType.Text)
                 {
                     ResponseByName(message.Text);
-                    await client.SendTextMessageAsync(
-                        message.Chat.Id,
-                        $"\nTemperature: {NameOfCity}" +
-                        $"\n{TempOfCity} °C" +
-                        $"\n{FeelsLike} °C");
                 }
             }
-            else if (message.Type == MessageType.Location)
+
+            if (message.Type == MessageType.Location)
             {
                 Console.WriteLine(
                     $"{message.Chat.Id}" +
                     $"\t{message.From?.Username}" +
-                    $"\t{message.Location.Latitude}" +
-                    $"\t{message.Location.Longitude}");
+                    $"\t{message.Location?.Latitude}" +
+                    $"\t{message.Location?.Longitude}");
 
                 ResponseByGeo(message.Location);
             }
 
             await client.SendTextMessageAsync(
                 message.Chat.Id,
-                $"\nTemperature: {NameOfCity}" +
-                $"\n{TempOfCity} °C" +
-                $"\n{FeelsLike} °C");
+                $"\nTemperature in {_weatherResponse.Name}" +
+                $"\n{_weatherResponse.Main.Temp} °C" +
+                $"\n{_weatherResponse.Main.Feels_Like} °C");
 
-            Console.WriteLine($"{NameOfCity}\t{TempOfCity}\t{FeelsLike}");
+            Console.WriteLine(
+                $"{_weatherResponse.Name}" +
+                $"\t{_weatherResponse.Main.Temp}" +
+                $"\t{_weatherResponse.Main.Feels_Like}");
         }
 
         public void StartEcho()
@@ -161,14 +158,7 @@ namespace WeatherBot
                     response = sr.ReadToEnd();
                 }
 
-                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
-
-                if (weatherResponse != null)
-                {
-                    NameOfCity = weatherResponse.Name;
-                    TempOfCity = weatherResponse.Main.Temp;
-                    FeelsLike = weatherResponse.Main.Feels_Like;
-                }
+                _weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
             }
             catch (System.Net.WebException)
             {
@@ -197,13 +187,7 @@ namespace WeatherBot
                     response = sr.ReadToEnd();
                 }
 
-                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
-
-                if (weatherResponse != null)
-                {
-                    var lat = weatherResponse.Coord.lat;
-                    var lon = weatherResponse.Coord.lon;
-                }
+                _weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
             }
             catch (System.Net.WebException)
             {
