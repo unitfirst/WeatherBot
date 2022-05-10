@@ -16,8 +16,6 @@ namespace WeatherBot
 {
     public class Client
     {
-        private readonly string _token;
-        private readonly string lang = "en";
         private readonly TelegramBotClient _client;
         private readonly CancellationTokenSource _cts;
         private readonly ReceiverOptions _receiverOptions;
@@ -26,7 +24,6 @@ namespace WeatherBot
 
         public Client(string token)
         {
-            _token = token;
             _client = new TelegramBotClient(token);
             _cts = new CancellationTokenSource();
             _receiverOptions = new ReceiverOptions() {AllowedUpdates = { }};
@@ -146,7 +143,7 @@ namespace WeatherBot
                     $"?q={cityName}" +
                     $"&unit=metric" +
                     $"&appid={Config.APIKey}" +
-                    $"&lang={lang}";
+                    $"&lang={Config.Lang}";
 
                 var webRequest = (HttpWebRequest) WebRequest.Create(url);
                 var webResponse = (HttpWebResponse) webRequest?.GetResponse();
