@@ -21,7 +21,7 @@ namespace WeatherBot
             return "5314975107:AAGYAQgQuWhDNslmuT-JH_-kQdGH6PJEoL0";
         }
 
-        private static string GetAPI()
+        private static string GetApi()
         {
             return "3df6bf26591e4e5f1ee9a77b9fc19052";
         }
@@ -32,7 +32,7 @@ namespace WeatherBot
                 "https://api.openweathermap.org/data/2.5/weather" +
                 $"?lat={location.Latitude}" +
                 $"&lon={location.Longitude}" +
-                $"&appid={GetAPI()}";
+                $"&appid={GetApi()}";
 
             return url;
         }
@@ -42,7 +42,7 @@ namespace WeatherBot
             _url = "https://api.openweathermap.org/data/2.5/weather" +
                    $"?q={text}" +
                    "&unit=metric" +
-                   $"&appid={GetAPI()}" +
+                   $"&appid={GetApi()}" +
                    $"&lang={Lang}";
 
             return _url;
