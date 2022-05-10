@@ -72,11 +72,6 @@ namespace WeatherBot
                         msg.Execute(message, client);
                     }
                 }
-
-                if (message.Type == MessageType.Text)
-                {
-                    GetWeather(message);
-                }
             }
 
             if (message.Type == MessageType.Location)
@@ -86,9 +81,9 @@ namespace WeatherBot
                     $"\t{message.From?.Username}" +
                     $"\t{message.Location?.Latitude}" +
                     $"\t{message.Location?.Longitude}");
-
-                GetWeather(message);
             }
+
+            GetWeather(message);
 
             await client.SendTextMessageAsync(
                 message.Chat.Id,
@@ -137,18 +132,9 @@ namespace WeatherBot
 
         private HttpWebRequest RequestType(Message message)
         {
-            HttpWebRequest webRequest;
-
-            if (message.Type == MessageType.Text)
-            {
-                webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Text));
-            }
-            else
-            {
-                webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
-            }
-
-            return webRequest;
+            return (message.Type == MessageType.Text)
+                ? (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Text))
+                : (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
         }
 
         private void GetWeather(Message message)
@@ -158,7 +144,6 @@ namespace WeatherBot
                 string response;
 
                 var webResponse = (HttpWebResponse) RequestType(message).GetResponse();
-
                 using (var sr =
                     new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
                 {
