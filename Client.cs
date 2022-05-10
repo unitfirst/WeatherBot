@@ -135,24 +135,30 @@ namespace WeatherBot
             _commands.Add(new GetHelp());
         }
 
+        private HttpWebRequest RequestType(Message message)
+        {
+            HttpWebRequest webRequest;
+
+            if (message.Type == MessageType.Text)
+            {
+                webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Text));
+            }
+            else
+            {
+                webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
+            }
+
+            return webRequest;
+        }
+
         private void GetWeather(Message message)
         {
             try
             {
-                HttpWebRequest webRequest;
                 string response;
-                
-                if (message.Type == MessageType.Text)
-                {
-                    webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Text));
-                }
-                else
-                {
-                    webRequest = (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
-                }
-                
-                var webResponse = (HttpWebResponse) webRequest?.GetResponse();
-                
+
+                var webResponse = (HttpWebResponse) RequestType(message).GetResponse();
+
                 using (var sr =
                     new StreamReader(webResponse.GetResponseStream() ?? throw new InvalidOperationException()))
                 {
