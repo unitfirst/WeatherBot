@@ -55,7 +55,7 @@ namespace WeatherBot
             {
                 await HandleMessage(client, update.Message);
             }
-            else if(update.Type == UpdateType.Message && update.Message?.Location !=null)
+            else if (update.Type == UpdateType.Message && update.Message?.Location != null)
             {
                 await HandleMessage(client, update.Message);
             }
@@ -78,18 +78,28 @@ namespace WeatherBot
                 {
                     ResponseByName(message.Text);
                     await client.SendTextMessageAsync(
-                        message.Chat.Id, $"\nTemperature: {NameOfCity} \n{TempOfCity} °C\n{FeelsLike} °C");
+                        message.Chat.Id, 
+                        $"\nTemperature: {NameOfCity}" +
+                        $"\n{TempOfCity} °C" +
+                        $"\n{FeelsLike} °C");
                 }
-
-                else if (message.Type == MessageType.Location)
-                {
-                    ResponseByGeo(message.Location);
-                    await client.SendTextMessageAsync(
-                        message.Chat.Id, $"\nTemperature: {NameOfCity} \n{TempOfCity} °C\n{FeelsLike} °C");
-                }
-
-                Console.WriteLine($"{NameOfCity}\t{TempOfCity}\t{FeelsLike}");
             }
+            else if (message.Type == MessageType.Location)
+            {
+                Console.WriteLine(
+                    $"{message.Chat.Id}" +
+                    $"\t{message.From?.Username}" +
+                    $"\t{message.Location.Latitude}" +
+                    $"\t{message.Location.Longitude}");
+                ResponseByGeo(message.Location);
+            }
+
+            await client.SendTextMessageAsync(
+                message.Chat.Id, 
+                $"\nTemperature: {NameOfCity}" +
+                $"\n{TempOfCity} °C" +
+                $"\n{FeelsLike} °C");
+            Console.WriteLine($"{NameOfCity}\t{TempOfCity}\t{FeelsLike}");
         }
 
         public void StartEcho()
