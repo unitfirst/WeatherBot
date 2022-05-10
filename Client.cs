@@ -65,7 +65,10 @@ namespace WeatherBot
         {
             if (message.Text != null)
             {
-                Console.WriteLine($"{message.Chat.Id}\t{message.From?.Username}\t{message.Text}");
+                Console.WriteLine(
+                    $"{message.Chat.Id}" +
+                    $"\t{message.From?.Username}" +
+                    $"\t{message.Text}");
                 foreach (var msg in _commands)
                 {
                     if (msg.Contains(message.Text))
@@ -78,7 +81,7 @@ namespace WeatherBot
                 {
                     ResponseByName(message.Text);
                     await client.SendTextMessageAsync(
-                        message.Chat.Id, 
+                        message.Chat.Id,
                         $"\nTemperature: {NameOfCity}" +
                         $"\n{TempOfCity} °C" +
                         $"\n{FeelsLike} °C");
@@ -91,14 +94,16 @@ namespace WeatherBot
                     $"\t{message.From?.Username}" +
                     $"\t{message.Location.Latitude}" +
                     $"\t{message.Location.Longitude}");
+
                 ResponseByGeo(message.Location);
             }
 
             await client.SendTextMessageAsync(
-                message.Chat.Id, 
+                message.Chat.Id,
                 $"\nTemperature: {NameOfCity}" +
                 $"\n{TempOfCity} °C" +
                 $"\n{FeelsLike} °C");
+
             Console.WriteLine($"{NameOfCity}\t{TempOfCity}\t{FeelsLike}");
         }
 
