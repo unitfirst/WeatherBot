@@ -79,19 +79,21 @@ namespace WeatherBot
                     $"\t{message.Location?.Latitude}" +
                     $"\t{message.Location?.Longitude}");
             }
-
+            
             GetWeather(message);
 
-            await client.SendTextMessageAsync(
+             await client.SendTextMessageAsync(
                 message.Chat.Id,
                 $"\nTemperature in {_weatherResponse.Name}" +
-                $"\n{_weatherResponse.Main.Temp} °C" +
-                $"\n{_weatherResponse.Main.Feels_Like} °C");
+                $"\n{Math.Round(_weatherResponse.Main.Temp)} °C" +
+                $"\n{Math.Round(_weatherResponse.Main.Feels_Like)} °C");
 
             Console.WriteLine(
                 $"{_weatherResponse.Name}" +
                 $"\t{_weatherResponse.Main.Temp}" +
                 $"\t{_weatherResponse.Main.Feels_Like}");
+            
+
         }
 
         public void StartEcho()
@@ -106,8 +108,7 @@ namespace WeatherBot
             CheckEcho();
 
             Console.ReadLine();
-            _commands.Clear();
-            StopEcho();
+            return;
         }
 
         private async void CheckEcho()
@@ -117,8 +118,9 @@ namespace WeatherBot
             Console.WriteLine($"Start listening: {me.Username}");
         }
 
-        private void StopEcho()
+        public void StopEcho()
         {
+            _commands.Clear();
             _cts.Cancel();
         }
 
@@ -149,8 +151,9 @@ namespace WeatherBot
 
                 _weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
             }
-            catch (System.Net.WebException)
+            catch (WebException)
             {
+                
                 Console.WriteLine("Exception!");
                 return;
             }
