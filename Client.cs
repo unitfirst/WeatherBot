@@ -85,8 +85,8 @@ namespace WeatherBot
              await client.SendTextMessageAsync(
                 message.Chat.Id,
                 $"\nTemperature in {_weatherResponse.Name}" +
-                $"\n{Math.Round(_weatherResponse.Main.Temp)} °C" +
-                $"\n{Math.Round(_weatherResponse.Main.Feels_Like)} °C");
+                $"\nTemp:\t{Math.Round(_weatherResponse.Main.Temp - 273)} °C" +
+                $"\nFeels like:\t{Math.Round(_weatherResponse.Main.Feels_Like - 273)} °C");
 
             Console.WriteLine(
                 $"{_weatherResponse.Name}" +
@@ -108,7 +108,6 @@ namespace WeatherBot
             CheckEcho();
 
             Console.ReadLine();
-            return;
         }
 
         private async void CheckEcho()
