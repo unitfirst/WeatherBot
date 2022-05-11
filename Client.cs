@@ -13,7 +13,6 @@ namespace WeatherBot
 {
     public class Client
     {
-        private readonly string _token;
         private readonly TelegramBotClient _client;
         private readonly CancellationTokenSource _cts;
         private readonly ReceiverOptions _receiverOptions;
@@ -21,7 +20,6 @@ namespace WeatherBot
 
         public Client(string token)
         {
-            _token = token;
             _client = new TelegramBotClient(token);
             _cts = new CancellationTokenSource();
             _receiverOptions = new ReceiverOptions() {AllowedUpdates = { }};
@@ -40,7 +38,6 @@ namespace WeatherBot
             CheckEcho();
 
             Console.ReadLine();
-            _commands.Clear();
             StopEcho();
         }
 
@@ -51,8 +48,9 @@ namespace WeatherBot
             Console.WriteLine($"StartEcho listening: {me.Username}");
         }
 
-        private void StopEcho()
+        public void StopEcho()
         {
+            _commands.Clear();
             _cts.Cancel();
         }
 
