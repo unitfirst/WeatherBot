@@ -32,6 +32,7 @@ namespace WeatherBot
                 "https://api.openweathermap.org/data/2.5/weather" +
                 $"?lat={location.Latitude}" +
                 $"&lon={location.Longitude}" +
+                "&units=metric" +
                 $"&appid={GetApi()}";
 
             return url;
@@ -41,7 +42,7 @@ namespace WeatherBot
         {
             _url = "https://api.openweathermap.org/data/2.5/weather" +
                    $"?q={message}" +
-                   "&unit=metric" +
+                   "&units=metric" +
                    $"&appid={GetApi()}" +
                    $"&lang={Lang}";
 
