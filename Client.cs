@@ -46,11 +46,8 @@ namespace WeatherBot
 
         private async Task HandleUpdatesAsync(ITelegramBotClient client, Update update, CancellationToken cts)
         {
-            if (update.Type == UpdateType.Message && update.Message?.Text != null)
-            {
-                await HandleMessage(client, update.Message);
-            }
-            else if (update.Type == UpdateType.Message && update.Message?.Location != null)
+            if (update.Type == UpdateType.Message &&
+                (update.Message?.Text != null || update.Message?.Location != null))
             {
                 await HandleMessage(client, update.Message);
             }
