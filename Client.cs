@@ -21,7 +21,6 @@ namespace WeatherBot
         private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
         private readonly Config _config = new Config();
-        private WeatherResponse _weatherResponse;
 
         public Client(string token)
         {
@@ -85,23 +84,13 @@ namespace WeatherBot
             try
             {
                 GetWeather(client, message);
-                
-                client.SendTextMessageAsync(
-                    message.Chat.Id,
-                    $"\nTemperature in {_weatherResponse.Name}" +
-                    $"\nTemp:\t{Math.Round(_weatherResponse.Main.Temp)} °C" +
-                    $"\nFeels like:\t{Math.Round(_weatherResponse.Main.Feels_Like)} °C");
-
-                Console.WriteLine(
-                    $"{_weatherResponse.Name}" +
-                    $"\t{_weatherResponse.Main.Temp}" +
-                    $"\t{_weatherResponse.Main.Feels_Like}");
-                
             }
             catch (Exception e)
             {
                 Console.WriteLine("HandleMessage exception");
             }
+
+            message = null;
             return Task.CompletedTask;
         }
 
@@ -159,8 +148,22 @@ namespace WeatherBot
                     response = sr.ReadToEnd();
                 }
 
-                _weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
-                return Task.CompletedTask;
+                var weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
+
+                var name = weatherResponse.Name;
+                var temp = weatherResponse.Main.Temp;
+                var feels = weatherResponse.Main.Feels_Like;
+
+                client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    $"\nTemperature in {name}" +
+                    $"\nTemp:\t{Math.Round(temp)} °C" +
+                    $"\nFeels like:\t{Math.Round(feels)} °C");
+                
+                Console.WriteLine(
+                    $"{name}" +
+                    $"\t{temp}" +
+                    $"\t{feels}");
             }
             catch (WebException)
             {
@@ -168,6 +171,8 @@ namespace WeatherBot
                 Console.WriteLine("owm.org error");
                 return Task.CompletedTask;
             }
+
+            return Task.CompletedTask;
         }
     }
 }
