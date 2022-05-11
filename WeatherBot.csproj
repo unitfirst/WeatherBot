@@ -96,6 +96,7 @@
         <Compile Include="Client.cs" />
         <Compile Include="Command\Command.cs" />
         <Compile Include="Command\Commands\GetHelp.cs" />
+        <Compile Include="Command\Commands\GetStart.cs" />
         <Compile Include="Config.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

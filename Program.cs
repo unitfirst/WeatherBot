@@ -20,6 +20,7 @@ namespace WeatherBot
                 {
                     case "0":
                         Console.WriteLine("\nGoodbye.");
+                        client.StopEcho();
                         return;
                     case "1":
                         client.StartEcho();

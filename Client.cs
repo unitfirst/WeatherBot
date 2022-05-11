@@ -50,13 +50,23 @@ namespace WeatherBot
                 (update.Message?.Text != null || update.Message?.Location != null))
             {
                 await HandleMessage(client, update.Message);
+                return;
             }
         }
 
-        private async Task HandleMessage(ITelegramBotClient client, Message message)
+        private Task HandleMessage(ITelegramBotClient client, Message message)
         {
             if (message.Text != null)
             {
+                if (message.Type == MessageType.Location)
+                {
+                    Console.WriteLine(
+                        $"{message.Chat.Id}" +
+                        $"\t{message.From?.Username}" +
+                        $"\t{message.Location?.Latitude}" +
+                        $"\t{message.Location?.Longitude}");
+                }
+
                 Console.WriteLine(
                     $"{message.Chat.Id}" +
                     $"\t{message.From?.Username}" +
@@ -67,33 +77,32 @@ namespace WeatherBot
                     if (msg.Contains(message.Text))
                     {
                         msg.Execute(message, client);
+                        return Task.CompletedTask;
                     }
                 }
             }
 
-            if (message.Type == MessageType.Location)
+            try
             {
+                GetWeather(client, message);
+                
+                client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    $"\nTemperature in {_weatherResponse.Name}" +
+                    $"\nTemp:\t{Math.Round(_weatherResponse.Main.Temp)} °C" +
+                    $"\nFeels like:\t{Math.Round(_weatherResponse.Main.Feels_Like)} °C");
+
                 Console.WriteLine(
-                    $"{message.Chat.Id}" +
-                    $"\t{message.From?.Username}" +
-                    $"\t{message.Location?.Latitude}" +
-                    $"\t{message.Location?.Longitude}");
+                    $"{_weatherResponse.Name}" +
+                    $"\t{_weatherResponse.Main.Temp}" +
+                    $"\t{_weatherResponse.Main.Feels_Like}");
+                
             }
-            
-            GetWeather(message);
-
-             await client.SendTextMessageAsync(
-                message.Chat.Id,
-                $"\nTemperature in {_weatherResponse.Name}" +
-                $"\nTemp:\t{Math.Round(_weatherResponse.Main.Temp - 273)} °C" +
-                $"\nFeels like:\t{Math.Round(_weatherResponse.Main.Feels_Like - 273)} °C");
-
-            Console.WriteLine(
-                $"{_weatherResponse.Name}" +
-                $"\t{_weatherResponse.Main.Temp}" +
-                $"\t{_weatherResponse.Main.Feels_Like}");
-            
-
+            catch (Exception e)
+            {
+                Console.WriteLine("HandleMessage exception");
+            }
+            return Task.CompletedTask;
         }
 
         public void StartEcho()
@@ -108,6 +117,7 @@ namespace WeatherBot
             CheckEcho();
 
             Console.ReadLine();
+            StopEcho();
         }
 
         private async void CheckEcho()
@@ -126,6 +136,7 @@ namespace WeatherBot
         private void AddCommand()
         {
             _commands.Add(new GetHelp());
+            _commands.Add(new GetStart());
         }
 
         private HttpWebRequest RequestType(Message message)
@@ -135,7 +146,7 @@ namespace WeatherBot
                 : (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
         }
 
-        private void GetWeather(Message message)
+        private Task GetWeather(ITelegramBotClient client, Message message)
         {
             try
             {
@@ -149,12 +160,13 @@ namespace WeatherBot
                 }
 
                 _weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
+                return Task.CompletedTask;
             }
             catch (WebException)
             {
-                
-                Console.WriteLine("Exception!");
-                return;
+                client.SendTextMessageAsync(message.Chat.Id, "\nSorry. I Dont know what is a place.");
+                Console.WriteLine("owm.org error");
+                return Task.CompletedTask;
             }
         }
     }
