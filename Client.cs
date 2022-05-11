@@ -17,16 +17,16 @@ namespace WeatherBot
     public class Client
     {
         private readonly TelegramBotClient _client;
-        private readonly CancellationTokenSource _cts;
-        private readonly ReceiverOptions _receiverOptions;
         private readonly List<Command.Command> _commands;
         private readonly Config _config = new Config();
+        private readonly CancellationTokenSource _cts;
+        private readonly ReceiverOptions _receiverOptions;
 
         public Client(string token)
         {
             _client = new TelegramBotClient(token);
             _cts = new CancellationTokenSource();
-            _receiverOptions = new ReceiverOptions() {AllowedUpdates = { }};
+            _receiverOptions = new ReceiverOptions();
             _commands = new List<Command.Command>();
         }
 
@@ -47,10 +47,7 @@ namespace WeatherBot
         {
             if (update.Type == UpdateType.Message &&
                 (update.Message?.Text != null || update.Message?.Location != null))
-            {
                 await HandleMessage(client, update.Message);
-                return;
-            }
         }
 
         private Task HandleMessage(ITelegramBotClient client, Message message)
@@ -58,13 +55,11 @@ namespace WeatherBot
             if (message.Text != null)
             {
                 if (message.Type == MessageType.Location)
-                {
                     Console.WriteLine(
                         $"{message.Chat.Id}" +
                         $"\t{message.From?.Username}" +
                         $"\t{message.Location?.Latitude}" +
                         $"\t{message.Location?.Longitude}");
-                }
 
                 Console.WriteLine(
                     $"{message.Chat.Id}" +
@@ -72,13 +67,11 @@ namespace WeatherBot
                     $"\t{message.Text}");
 
                 foreach (var msg in _commands)
-                {
                     if (msg.Contains(message.Text))
                     {
                         msg.Execute(message, client);
                         return Task.CompletedTask;
                     }
-                }
             }
 
             try
@@ -90,7 +83,6 @@ namespace WeatherBot
                 Console.WriteLine("HandleMessage exception");
             }
 
-            message = null;
             return Task.CompletedTask;
         }
 
@@ -130,12 +122,12 @@ namespace WeatherBot
 
         private HttpWebRequest RequestType(Message message)
         {
-            return (message.Type == MessageType.Text)
+            return message.Type == MessageType.Text
                 ? (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Text))
                 : (HttpWebRequest) WebRequest.Create(_config.GetUrl(message.Location));
         }
 
-        private Task GetWeather(ITelegramBotClient client, Message message)
+        private void GetWeather(ITelegramBotClient client, Message message)
         {
             try
             {
@@ -159,7 +151,7 @@ namespace WeatherBot
                     $"\nTemperature in {name}" +
                     $"\nTemp:\t{Math.Round(temp)} °C" +
                     $"\nFeels like:\t{Math.Round(feels)} °C");
-                
+
                 Console.WriteLine(
                     $"{name}" +
                     $"\t{temp}" +
@@ -169,10 +161,7 @@ namespace WeatherBot
             {
                 client.SendTextMessageAsync(message.Chat.Id, "\nSorry. I Dont know what is a place.");
                 Console.WriteLine("owm.org error");
-                return Task.CompletedTask;
             }
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -1,5 +1,3 @@
-using WeatherBot.Command.Commands;
-
 namespace WeatherBot
 {
     public class TemperatureInfo
