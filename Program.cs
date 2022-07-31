@@ -1,69 +1,40 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Exceptions;
-using Telegram.Bot.Extensions.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace WeatherBot
 {
     internal class Program
     {
-        private static TelegramBotClient _client = new(Config.Token);
-
-        static Task HandleErrorAsync(ITelegramBotClient client, Exception exception, CancellationToken cts)
+        private static void Main(string[] args)
         {
-            var exceptionMessage = exception switch
-            {
-                ApiRequestException apiRequestException
-                    => $"Error telegram API\n{apiRequestException.ErrorCode}\n{apiRequestException.Message}",
-                _ => exception.ToString()
-            };
+            var client = new Client(Config.Token);
 
-            Console.WriteLine(exceptionMessage);
-            return Task.CompletedTask;
-        }
+            Console.WriteLine("Welcome. Please select option:");
+            Console.WriteLine("0. Exit program");
+            Console.WriteLine("1. Start engine");
 
-        static async Task HandleUpdatesAsync(ITelegramBotClient client, Update update, CancellationToken cts)
-        {
-            if (update.Type == UpdateType.Message && update.Message?.Text != null)
+            while (true)
             {
-                await HandleMessage(client, update.Message);
-                return;
+                var action = Console.ReadLine();
+                switch (action)
+                {
+                    case "0":
+                        Console.WriteLine("\nGoodbye.");
+                        client.StopEcho();
+                        return;
+                    case "1":
+                        client.StartEcho();
+                        break;
+                    default:
+                        Console.WriteLine("\nUnknown command! Try again.");
+                        Console.WriteLine("\nPlease select option:");
+                        Console.WriteLine("0. Exit program");
+                        Console.WriteLine("1. Start engine");
+                        continue;
+                }
+
+                break;
             }
-        }
-
-        static async Task HandleMessage(ITelegramBotClient client, Message message)
-        {
-            if (message.Text == "/start")
-            {
-                await client.SendTextMessageAsync(message.Chat.Id, "Hello!");
-            }
-        }
-
-
-        static async Task Main(string[] args)
-        {
-            var cts = new CancellationTokenSource();
-            var receiverOptions = new ReceiverOptions
-            {
-                AllowedUpdates = { }
-            };
-
-            _client.StartReceiving(
-                HandleUpdatesAsync,
-                HandleErrorAsync,
-                receiverOptions,
-                cancellationToken: cts.Token);
-
-            var me = await _client.GetMeAsync(cancellationToken: cts.Token);
-
-            Console.WriteLine($"Start listening: {me.Username}");
-            Console.ReadLine();
-
-            cts.Cancel();
         }
     }
 }
