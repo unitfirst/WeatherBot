@@ -1,5 +1,3 @@
-using System.Net.Configuration;
-using System.Runtime.InteropServices;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -13,12 +11,8 @@ namespace WeatherBot.Command
         public bool Contains(string message)
         {
             foreach (var msg in Names)
-            {
                 if (msg.Contains(message))
-                {
                     return true;
-                }
-            }
 
             return false;
         }
